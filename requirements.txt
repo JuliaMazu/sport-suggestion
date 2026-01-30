@@ -5,3 +5,4 @@ flask
 joblib
 requests
 boto3
+mlflow
