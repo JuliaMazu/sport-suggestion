@@ -6,3 +6,4 @@ joblib
 requests
 boto3
 mlflow
+kagglehub
