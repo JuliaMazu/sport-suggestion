@@ -1,0 +1,80 @@
+name: mlops-ci
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: eu-west-1
+  ECR_REPOSITORY: mlops-training
+  BATCH_JOB_NAME: mlops-training-job
+  BATCH_JOB_QUEUE: mlops-queue
+  BATCH_JOB_DEFINITION: mlops-job-def
+  S3_BUCKET: mlops-sport-artifacts
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Run ETL - Download
+        run: python download_data.py
+
+      - name: Run ETL - Check
+        run: python check_data.py
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker image
+        run: |
+          docker build -t $ECR_REPOSITORY:${{ github.sha }} .
+          docker tag $ECR_REPOSITORY:${{ github.sha }} \
+            ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:${{ github.sha }}
+
+      - name: Push to ECR
+        run: |
+          docker push ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:${{ github.sha }}
+
+      - name: Submit AWS Batch job
+        id: batch
+        run: |
+          JOB_ID=$(aws batch submit-job \
+            --job-name $BATCH_JOB_NAME \
+            --job-queue $BATCH_JOB_QUEUE \
+            --job-definition $BATCH_JOB_DEFINITION \
+            --container-overrides image=${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:${{ github.sha }} \
+            --query jobId \
+            --output text)
+
+          echo "JOB_ID=$JOB_ID" >> $GITHUB_ENV
+
+      - name: Wait for Batch job
+        run: |
+          aws batch wait jobs-succeeded --jobs $JOB_ID
+
+      - name: Upload model to S3
+        run: |
+          aws s3 cp model.pkl s3://$S3_BUCKET/ci/models/model-${{ github.sha }}.pkl
