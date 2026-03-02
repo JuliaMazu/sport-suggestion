@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  AWS_REGION: eu-west-1
+  AWS_REGION: eu-north-1
   ECR_REPOSITORY: mlops-training
   BATCH_JOB_NAME: mlops-training-job
   BATCH_JOB_QUEUE: mlops-queue
