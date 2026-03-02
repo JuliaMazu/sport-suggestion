@@ -12,6 +12,7 @@ def run_dq_tests(df):
     
     # 2. Range Check (assuming skills are 0-10)
     skills = df.columns[1:11]
+    df[skills] = df[skills].apply(pd.to_numeric, errors='coerce')
     out_of_range = ((df[skills] < 0) | (df[skills] > 10)).any().any()
     range_pass = not out_of_range
     print(f"2. Validity: {'PASS' if range_pass else 'FAIL'} (Values outside 0-10 found)")
