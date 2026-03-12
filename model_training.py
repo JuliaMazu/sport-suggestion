@@ -5,7 +5,6 @@ from datetime import datetime
 import joblib
 import mlflow
 import mlflow.sklearn
-import boto3
 
 # 1. Setup MLflow Experiment
 mlflow.set_experiment("Sport_Recommendation_Engine")
@@ -52,13 +51,23 @@ with mlflow.start_run():
 
     print("Model, Scaler, and MLflow run saved successfully!")
 
-    # 5. Upload Model to AWS S3
-    timestamp = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
-    s3_prefix = f"ci/models/{timestamp}"
-
+    # 5. Upload Model to Azure blob storage
+    from azure.storage.blob import BlobServiceClient
+    from datetime import datetime
     
-    s3 = boto3.client("s3")
-    s3.upload_file("knn_sport_model.pkl", "mlops-sport-artifacts", f"{s3_prefix}/knn_sport_model.pkl")
-    s3.upload_file("sport_scaler.pkl", "mlops-sport-artifacts", f"{s3_prefix}/sport_scaler.pkl")
-    s3.upload_file("sport_names.pkl", "mlops-sport-artifacts", f"{s3_prefix}/sport_names.pkl")
+    connection_string = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
+    
+    blob_service = BlobServiceClient.from_connection_string(connection_string)
+    
+    timestamp = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
+    container = "models"
+    
+    for file in ["knn_sport_model.pkl", "sport_scaler.pkl", "sport_names.pkl"]:
+        blob_client = blob_service.get_blob_client(
+            container=container,
+            blob=f"{timestamp}/{file}"
+        )
+    
+        with open(file, "rb") as data:
+            blob_client.upload_blob(data)
 
