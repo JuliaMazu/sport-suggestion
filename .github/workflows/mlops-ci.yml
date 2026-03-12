@@ -49,7 +49,7 @@ jobs:
           git config --global user.email "mixolydien@github.com"
           git config --global user.name "mixolydien"
       
-          git clone https://Mixolydien:$HF_TOKEN@huggingface.co/spaces/Mixolydien/sport-suggestion-api hf-space
+          git clone https://Mixolydien:$HF_TOKEN@huggingface.co/spaces/Mixolydien/Sport-Suggestion hf-space
       
           cp knn_sport_model.pkl hf-space/
           cp sport_scaler.pkl hf-space/
