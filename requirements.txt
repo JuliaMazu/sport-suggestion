@@ -7,3 +7,4 @@ requests
 boto3
 mlflow
 kagglehub
+azure-storage-blob
