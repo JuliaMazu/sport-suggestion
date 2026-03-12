@@ -48,13 +48,13 @@ jobs:
         run: |
           git config --global user.email "mixolydien@github.com"
           git config --global user.name "mixolydien"
-
-          git clone https://$HF_TOKEN@huggingface.co/spaces/Mixolydien/sport-suggestion-api
-
+      
+          git clone https://$HF_TOKEN@huggingface.co/spaces/Mixolydien/sport-suggestion-api hf-space
+      
           cp knn_sport_model.pkl hf-space/
           cp sport_scaler.pkl hf-space/
           cp sport_names.pkl hf-space/
-
+      
           cd hf-space
           git add .
           git commit -m "Update model from CI pipeline"
