@@ -51,23 +51,7 @@ with mlflow.start_run():
 
     print("Model, Scaler, and MLflow run saved successfully!")
 
-    # 5. Upload Model to Azure blob storage
-    from azure.storage.blob import BlobServiceClient
     from datetime import datetime
-    
-    connection_string = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
-    
-    blob_service = BlobServiceClient.from_connection_string(connection_string)
-    
-    timestamp = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
-    container = "models"
-    
-    for file in ["knn_sport_model.pkl", "sport_scaler.pkl", "sport_names.pkl"]:
-        blob_client = blob_service.get_blob_client(
-            container=container,
-            blob=f"{timestamp}/{file}"
-        )
-    
-        with open(file, "rb") as data:
-            blob_client.upload_blob(data)
+    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    joblib.dump(model, f"knn_sport_model_{timestamp}.pkl")
 
