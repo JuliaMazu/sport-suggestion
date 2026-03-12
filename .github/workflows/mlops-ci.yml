@@ -4,7 +4,7 @@ on:
   push:
     branches: 
       - main
-      - feat/init-mlops-kagglehub
+      - feat/init-mlops-huggingface
 
 jobs:
 
@@ -41,3 +41,21 @@ jobs:
             knn_sport_model.pkl
             sport_scaler.pkl
             sport_names.pkl
+
+      - name: Push models to HuggingFace Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "github-actions"
+
+          git clone https://$HF_TOKEN@huggingface.co/spaces/<username>/sport-suggestion-api hf-space
+
+          cp knn_sport_model.pkl hf-space/
+          cp sport_scaler.pkl hf-space/
+          cp sport_names.pkl hf-space/
+
+          cd hf-space
+          git add .
+          git commit -m "Update model from CI pipeline"
+          git push
