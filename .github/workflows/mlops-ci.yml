@@ -2,7 +2,9 @@ name: mlops-ci
 
 on:
   push:
-    branches: [ main ]
+    branches: 
+      - main
+      - feat/init-mlops-kagglehub
 
 jobs:
 
