@@ -5,3 +5,4 @@ flask
 joblib
 requests
 kagglehub
+mlflow
