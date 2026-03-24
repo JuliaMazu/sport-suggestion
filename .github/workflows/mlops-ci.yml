@@ -54,6 +54,8 @@ jobs:
           cp knn_sport_model.pkl hf-space/
           cp sport_scaler.pkl hf-space/
           cp sport_names.pkl hf-space/
+          cp app.py hf-space/
+          cp requirements.txt hf-space/
       
           cd hf-space
           git add .
