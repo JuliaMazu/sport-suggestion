@@ -4,7 +4,4 @@ scikit-learn
 flask
 joblib
 requests
-boto3
-mlflow
 kagglehub
-azure-storage-blob
